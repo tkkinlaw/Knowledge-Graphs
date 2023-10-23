@@ -327,7 +327,8 @@ class CreateCopyofGraph(object):
             batch.append(curr_relationship)
 
         # apply final batch of edits to the knowledge graph
-        result = knowledgegraph_load.apply_edits(adds=batch)
+        if len(batch) > 2:
+            result = knowledgegraph_load.apply_edits(adds=batch)
         # print error if one occurs during edit operation
         try:
             print(result["error"])
