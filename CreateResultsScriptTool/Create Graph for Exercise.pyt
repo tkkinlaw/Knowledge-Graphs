@@ -21,11 +21,12 @@ class CreateCopyofGraph(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = "Create graph"
-        self.description = "This python script tool can be used within ArcGIS Pro to create a knowledge graph to begin an exercise. Use this tool if you did not complete an exercise properly."
+        self.description = "This python script tool can be used within ArcGIS Pro to create a knowledge graph to begin an exercise. Use this tool if you did not complete an exercise properly. The JSON folder location is hard coded to: C:\backups\myknowledgegraph_backup"
         self.canRunInBackground = False
 
     def getParameterInfo(self):
-        """Define parameter definitions"""       
+        """Define parameter definitions"""     
+        # These parameters are sued across both tools
         # Username
         paramUsername = arcpy.Parameter(
         displayName="Enterprise Portal Username",
@@ -44,7 +45,22 @@ class CreateCopyofGraph(object):
         direction="Input",
         category = "Connect to the GIS")
 
-        # Exercise number. For which lesson do you want that starting KG for?
+        # Input KG to export to JSON files
+        if arcpy.GetActivePortalURL() != "":
+            gis = GIS("home")
+            kgItems = [item for item in gis.content.search("type:Knowledge Graph", item_type="Knowledge Graph")]
+
+        paramInputKG = arcpy.Parameter(
+        displayName="Knowledge Graph to Export to JSON",
+        name="Knowledge_Graph_to_Export_to_JSON",
+        datatype="GPString",
+        parameterType="Required",
+        direction="Input")
+
+        paramInputKG.filter.type = "ValueList"
+        paramInputKG.filter.list = [item.url for item in kgItems]
+
+        # Exercise number. For which lesson do you want to save a starting KG for, or create one for?
         paramExNum = arcpy.Parameter(
         displayName="Exercise Number",
         name="Exercise_number",
@@ -55,7 +71,7 @@ class CreateCopyofGraph(object):
         paramExNum.filter.type = "ValueList"
         paramExNum.filter.list = ["1", "2", "3a", "3b"]
 
-        # Output KG name THIS IS CURRENTLY A DUMMY PARAMETER. NOT USED IN THE SCRIPT.
+        # Output KG name
         paramOutKG = arcpy.Parameter(
         displayName="Output Knowledge Graph Name",
         name="Output_Knowledge_Graph_Name",
@@ -70,8 +86,9 @@ class CreateCopyofGraph(object):
         datatype="GPString",
         parameterType="Required",
         direction="Output")
+        paramJSONFolder.value = r"C:\backups\myknowledgegraph_backup"
 
-        params = [paramUsername, paramPassword, paramExNum, paramOutKG, paramJSONFolder]
+        params = [paramUsername, paramPassword, paramExNum, paramInputKG, paramOutKG, paramJSONFolder]
         return params
 
     def isLicensed(self):
@@ -82,6 +99,7 @@ class CreateCopyofGraph(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
         return
 
     def updateMessages(self, parameters):
@@ -111,7 +129,7 @@ class CreateCopyofGraph(object):
                 "properties": knowledgegraph_backup.datamodel["entity_types"][types]["properties"]}
             entity_types.append(curr_entity_type)
 
-        with open(os.path.join(paramJSONFolder, dm_ent), "w") as f:
+        with open(os.path.join(paramJSONFolder, paramExNum, dm_ent), "w") as f:
             json.dump(entity_types, f)
         
         # Write data model relationship types to backup JSON file
@@ -122,7 +140,7 @@ class CreateCopyofGraph(object):
                 "properties": knowledgegraph_backup.datamodel["relationship_types"][types]["properties"]}
             relationship_types.append(curr_relationship_type)
 
-        with open(os.path.join(paramJSONFolder, dm_rel), "w") as f:
+        with open(os.path.join(paramJSONFolder, paramExNum, dm_rel), "w") as f:
             json.dump(relationship_types, f)
 
         # Write entities to backup JSON file
@@ -140,7 +158,7 @@ class CreateCopyofGraph(object):
             del curr_entity["_properties"]["objectid"]
             all_entities_fromquery.append(curr_entity)
 
-        with open(os.path.join(paramJSONFolder, all_ent), "w") as f:
+        with open(os.path.join(paramJSONFolder, paramExNum, all_ent), "w") as f:
             json.dump(all_entities_fromquery, f)
         
         # Write relationships to backup JSON file
@@ -162,7 +180,7 @@ class CreateCopyofGraph(object):
         # OPTIONAL: Write provenance records to backup json file
         provenance_entities = knowledgegraph_backup.query_streaming("MATCH (n:Provenance) RETURN distinct n", include_provenance=True)
 
-        with open(os.path.join(paramJSONFolder, all_rel), "w") as f:
+        with open(os.path.join(paramJSONFolder, paramExNum, all_rel), "w") as f:
             json.dump(all_relationships_fromquery, f)
 
         # OPTIONAL: Write provenance records to backup JSON file
@@ -180,7 +198,7 @@ class CreateCopyofGraph(object):
             del curr_provenance["_properties"]["objectid"]
             all_provenance_fromquery.append(curr_provenance)
 
-        with open(os.path.join(paramJSONFolder, prov_file), "w") as f:
+        with open(os.path.join(paramJSONFolder, paramExNum, prov_file), "w") as f:
             json.dump(all_provenance_fromquery, f)
 
         # Load backup files
@@ -192,9 +210,9 @@ class CreateCopyofGraph(object):
         knowledgegraph_load = KnowledgeGraph(result.url, gis=gis)
 
         # Populate data model from saved JSON files
-        with open(os.path.join(paramJSONFolder, dm_ent), "r") as file:
+        with open(os.path.join(paramJSONFolder, paramExNum, dm_ent), "r") as file:
             dm_ents = json.load(file)
-        with open(os.path.join(paramJSONFolder, dm_rel), "r") as file:
+        with open(os.path.join(paramJSONFolder, paramExNum, dm_rel), "r") as file:
             dm_rels = json.load(file)
         knowledgegraph_load.named_object_type_adds(entity_types=dm_ents, relationship_types=dm_rels)
         
@@ -241,7 +259,7 @@ class CreateCopyofGraph(object):
                     date_properties.append(prop)
 
         # Add all entities to the knowledge graph
-        with open(os.path.join(paramJSONFolder, all_ent), "r") as file:
+        with open(os.path.join(paramJSONFolder, paramExNum, all_ent), "r") as file:
             original_entities = json.load(file)
         batch = []
         for curr_entity in original_entities:
@@ -273,7 +291,7 @@ class CreateCopyofGraph(object):
             print("No error adding entities")
 
         # Add all relationships to the knowledge graph
-        with open(os.path.join(paramJSONFolder, all_rel), "r") as file:
+        with open(os.path.join(paramJSONFolder, paramExNum, all_rel), "r") as file:
             original_rels = json.load(file)
         batch = []
         for curr_relationship in original_rels:
@@ -333,7 +351,7 @@ class CreateCopyofGraph(object):
                 adds={entity_type: {"property_names": prop_list}})
 
         # OPTIONAL: Add provenance records to the knowledge graph
-        with open(os.path.join(paramJSONFolder, prov_file), "r") as file:
+        with open(os.path.join(paramJSONFolder, paramExNum, prov_file), "r") as file:
             prov_entities = json.load(file)
 
         for curr_prov in prov_entities:
