@@ -26,7 +26,8 @@ class CreateCopyofGraph(object):
 
     def getParameterInfo(self):
         """Define parameter definitions"""     
-        # These parameters are sued across both tools
+        gis = GIS("home")
+        
         # Username
         paramUsername = arcpy.Parameter(
         displayName="Enterprise Portal Username",
@@ -46,9 +47,7 @@ class CreateCopyofGraph(object):
         category = "Connect to the GIS")
 
         # Input KG to export to JSON files
-        if arcpy.GetActivePortalURL() != "":
-            gis = GIS("home")
-            kgItems = [item for item in gis.content.search("type:Knowledge Graph", item_type="Knowledge Graph")]
+        kgItems = [item for item in gis.content.search("type:Knowledge Graph", item_type="Knowledge Graph")]
 
         paramInputKG = arcpy.Parameter(
         displayName="Knowledge Graph to Export to JSON",
@@ -117,9 +116,9 @@ class CreateCopyofGraph(object):
         prov_file = "provenance_entities.json"  # this will only be used if you want to backup provenance records
 
         #Connect to the Enterprise Portal
-        url = arcpy.GetActivePortalURL()
-        gis = GIS(url, paramUsername, paramPassword)
-        knowledgegraph_backup = KnowledgeGraph(url=url, gis=gis)
+        #url = arcpy.GetActivePortalURL()
+        gis = GIS("home")
+        knowledgegraph_backup = KnowledgeGraph(url=parameters[3].value, gis=gis)
 
         # Create backup files
         entity_types = []
@@ -129,7 +128,10 @@ class CreateCopyofGraph(object):
                 "properties": knowledgegraph_backup.datamodel["entity_types"][types]["properties"]}
             entity_types.append(curr_entity_type)
 
-        with open(os.path.join(paramJSONFolder, paramExNum, dm_ent), "w") as f:
+        folderPathRoot = os.path.join(parameters[5].value, parameters[2].value)
+        if not os.path.exists(folderPathRoot):
+            os.makedirs(folderPathRoot)
+        with open(os.path.join(folderPathRoot, dm_ent), "w") as f:
             json.dump(entity_types, f)
         
         # Write data model relationship types to backup JSON file
@@ -140,7 +142,7 @@ class CreateCopyofGraph(object):
                 "properties": knowledgegraph_backup.datamodel["relationship_types"][types]["properties"]}
             relationship_types.append(curr_relationship_type)
 
-        with open(os.path.join(paramJSONFolder, paramExNum, dm_rel), "w") as f:
+        with open(os.path.join(folderPathRoot, dm_rel), "w") as f:
             json.dump(relationship_types, f)
 
         # Write entities to backup JSON file
@@ -158,7 +160,7 @@ class CreateCopyofGraph(object):
             del curr_entity["_properties"]["objectid"]
             all_entities_fromquery.append(curr_entity)
 
-        with open(os.path.join(paramJSONFolder, paramExNum, all_ent), "w") as f:
+        with open(os.path.join(folderPathRoot, all_ent), "w") as f:
             json.dump(all_entities_fromquery, f)
         
         # Write relationships to backup JSON file
@@ -180,7 +182,7 @@ class CreateCopyofGraph(object):
         # OPTIONAL: Write provenance records to backup json file
         provenance_entities = knowledgegraph_backup.query_streaming("MATCH (n:Provenance) RETURN distinct n", include_provenance=True)
 
-        with open(os.path.join(paramJSONFolder, paramExNum, all_rel), "w") as f:
+        with open(os.path.join(folderPathRoot, all_rel), "w") as f:
             json.dump(all_relationships_fromquery, f)
 
         # OPTIONAL: Write provenance records to backup JSON file
@@ -198,21 +200,21 @@ class CreateCopyofGraph(object):
             del curr_provenance["_properties"]["objectid"]
             all_provenance_fromquery.append(curr_provenance)
 
-        with open(os.path.join(paramJSONFolder, paramExNum, prov_file), "w") as f:
+        with open(os.path.join(folderPathRoot, prov_file), "w") as f:
             json.dump(all_provenance_fromquery, f)
 
         # Load backup files
         result = gis.content.create_service(
-        name=paramOutKG,
+        name=parameters[4].value,
         capabilities="Query,Editing,Create,Update,Delete",
         service_type="KnowledgeGraph")
 
         knowledgegraph_load = KnowledgeGraph(result.url, gis=gis)
 
         # Populate data model from saved JSON files
-        with open(os.path.join(paramJSONFolder, paramExNum, dm_ent), "r") as file:
+        with open(os.path.join(folderPathRoot, dm_ent), "r") as file:
             dm_ents = json.load(file)
-        with open(os.path.join(paramJSONFolder, paramExNum, dm_rel), "r") as file:
+        with open(os.path.join(folderPathRoot, dm_rel), "r") as file:
             dm_rels = json.load(file)
         knowledgegraph_load.named_object_type_adds(entity_types=dm_ents, relationship_types=dm_rels)
         
@@ -259,7 +261,7 @@ class CreateCopyofGraph(object):
                     date_properties.append(prop)
 
         # Add all entities to the knowledge graph
-        with open(os.path.join(paramJSONFolder, paramExNum, all_ent), "r") as file:
+        with open(os.path.join(folderPathRoot, all_ent), "r") as file:
             original_entities = json.load(file)
         batch = []
         for curr_entity in original_entities:
@@ -291,7 +293,7 @@ class CreateCopyofGraph(object):
             print("No error adding entities")
 
         # Add all relationships to the knowledge graph
-        with open(os.path.join(paramJSONFolder, paramExNum, all_rel), "r") as file:
+        with open(os.path.join(folderPathRoot, all_rel), "r") as file:
             original_rels = json.load(file)
         batch = []
         for curr_relationship in original_rels:
@@ -351,7 +353,7 @@ class CreateCopyofGraph(object):
                 adds={entity_type: {"property_names": prop_list}})
 
         # OPTIONAL: Add provenance records to the knowledge graph
-        with open(os.path.join(paramJSONFolder, paramExNum, prov_file), "r") as file:
+        with open(os.path.join(folderPathRoot, prov_file), "r") as file:
             prov_entities = json.load(file)
 
         for curr_prov in prov_entities:
