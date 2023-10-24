@@ -14,13 +14,13 @@ class Toolbox(object):
         self.alias = "Create Graph for Exercise"
 
         # List of tool classes associated with this toolbox
-        self.tools = [CreateCopyofGraph]
+        self.tools = [BackupKGAsJSON,CreateKGfromJSON]
 
 
-class CreateCopyofGraph(object):
+class BackupKGAsJSON(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = "Create graph"
+        self.label = "Backup Knowledge Graph as JSON"
         self.description = "This python script tool can be used within ArcGIS Pro to create a knowledge graph to begin an exercise. Use this tool if you did not complete an exercise properly. The JSON folder location is hard coded to: C:\backups\myknowledgegraph_backup"
         self.canRunInBackground = False
 
@@ -368,6 +368,92 @@ class CreateCopyofGraph(object):
             curr_prov["_id"] = UUID(curr_prov["_id"])
             # add provenance record
             knowledgegraph_load.apply_edits(adds=[curr_prov])
+        return
+
+    def postExecute(self, parameters):
+        """This method takes place after outputs are processed and
+        added to the display."""
+        return
+
+class CreateKGfromJSON(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = "Create Knowledge Graph from JSON"
+        self.description = "This tool will create a Knowledge Graph from a folder of JSON files. This creates the entity types, relationship types, and loads the entities."
+        self.canRunInBackground = False
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        gis = GIS("home")
+        
+        # Username
+        paramUsername = arcpy.Parameter(
+        displayName="Enterprise Portal Username",
+        name="Enterprise_Portal_Username",
+        datatype="GPString",
+        parameterType="Required",
+        direction="Input",
+        category = "Connect to the GIS")
+
+        # Password
+        paramPassword = arcpy.Parameter(
+        displayName="Enterprise Portal Password",
+        name="Enterprise_Portal_Password",
+        datatype="GPString",
+        parameterType="Required",
+        direction="Input",
+        category = "Connect to the GIS")
+
+        # Declare input folder for JSON files
+        paramJSONFolder = arcpy.Parameter(
+        displayName="Folder Knowledge Graph Backups",
+        name="Folder_Knowledge_Graph_Backups",
+        datatype="GPString",
+        parameterType="Required",
+        direction="Input")
+        paramJSONFolder.value = r"C:\backups\myknowledgegraph_backup"
+
+        # Exercise number. For which lesson do you want to save a starting KG for, or create one for?
+        paramExNum = arcpy.Parameter(
+        displayName="Exercise Number",
+        name="Exercise_number",
+        datatype="GPString",
+        parameterType="Required",
+        direction="Input")
+
+        paramExNum.filter.type = "ValueList"
+        paramExNum.filter.list = ["1", "2", "3a", "3b"]
+
+        # Output KG name
+        paramOutKG = arcpy.Parameter(
+        displayName="Output Knowledge Graph Name",
+        name="Output_Knowledge_Graph_Name",
+        datatype="GPString",
+        parameterType="Required",
+        direction="Output")
+
+
+
+        params = [paramUsername,paramPassword,paramJSONFolder,paramExNum,paramOutKG]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter.  This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
         return
 
     def postExecute(self, parameters):
