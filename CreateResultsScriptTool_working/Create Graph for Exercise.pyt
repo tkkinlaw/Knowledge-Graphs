@@ -464,8 +464,8 @@ class CreateKGfromJSON(object):
 
         # load data model json files into graph data model
         output_folder = parameters[2].value
-        dm_ent = parameters[3].value
-        with open(os.path.join(output_folder, dm_ent), "r") as file:
+        subFolder = parameters[3].value
+        with open(os.path.join(output_folder, subFolder, dm_ent), "r") as file:
             dm_ents = json.load(file)
         with open(os.path.join(output_folder, dm_rel), "r") as file:
             dm_rels = json.load(file)
