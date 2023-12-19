@@ -454,6 +454,189 @@ class CreateKGfromJSON(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
+        
+        # create a knowledge graph without provenance enabled
+        result = gis.content.create_service(
+        name=parameters[4].value,
+        capabilities="Query,Editing,Create,Update,Delete",
+        service_type="KnowledgeGraph")
+        knowledgegraph_load = KnowledgeGraph(result.url, gis=gis)
+
+        # load data model json files into graph data model
+        output_folder = parameters[2].value
+        dm_ent = parameters[3].value
+        with open(os.path.join(output_folder, dm_ent), "r") as file:
+            dm_ents = json.load(file)
+        with open(os.path.join(output_folder, dm_rel), "r") as file:
+            dm_rels = json.load(file)
+        knowledgegraph_load.named_object_type_adds(
+            entity_types=dm_ents, relationship_types=dm_rels
+
+        # get document entity type name
+        doc_type_name = "Document"
+        for entity_type in dm_ents:
+            for prop in entity_type["properties"]:
+                if entity_type["properties"][prop]["role"] == "esriGraphNamedObjectDocument":
+                    doc_type_name = entity_type["name"])
+        
+        # get document relationship type name
+        doc_rel_type_name = "HasDocument"
+        for relationship_type in dm_rels:
+            for prop in relationship_type["properties"]:
+                if (
+                    relationship_type["properties"][prop]["role"] == "esriGraphNamedObjectDocument"): doc_rel_type_name = relationship_type["name"]
+
+        # load any additional document entity type properties
+        origin_document_properties = None
+        for entity_type in dm_ents:
+            if entity_type["name"] == doc_type_name:
+                origin_document_properties = entity_type["properties"]
+        prop_list = []
+        for prop in origin_document_properties:
+            prop_list.append(origin_document_properties[prop])
+        knowledgegraph_load.graph_property_adds(
+            type_name="Document", graph_properties=prop_list
+        )
+
+        # load any additional document relationship type properties
+        for relationship_type in dm_rels:
+            if relationship_type["name"] == doc_rel_type_name:
+                origin_document_rel_properties = relationship_type["properties"]
+        prop_list = []
+        for prop in origin_document_rel_properties:
+            prop_list.append(origin_document_rel_properties[prop])
+        knowledgegraph_load.graph_property_adds(
+            type_name="HasDocument", graph_properties=prop_list
+        )
+
+        date_properties = []
+        # add date property names for entity types
+        for types in dm_ents:
+            for prop in types["properties"]:
+                if types["properties"][prop]["fieldType"] == "esriFieldTypeDate":
+                    date_properties.append(prop)
+
+        # add date property names for relationship types
+        for types in dm_rels:
+            for prop in types["properties"]:
+                if types["properties"][prop]["fieldType"] == "esriFieldTypeDate":
+                    date_properties.append(prop)
+
+        # load entities json file
+        with open(os.path.join(output_folder, all_ent), "r") as file:
+            original_entities = json.load(file)
+        batch = []
+        for curr_entity in original_entities:
+            # if a batch reaches 20k records, apply that batch of edits to the knowledge graph
+            if len(batch) > 20000:
+                result = knowledgegraph_load.apply_edits(adds=batch)
+                batch = []
+                # print error if one occurs during edit operation
+                try:
+                    print(result["error"])
+                except:
+                    print("No error adding entities")
+            # in case original document type name is different, change name to Document
+            if curr_entity["_typeName"] == doc_type_name:
+                curr_entity["_typeName"] = "Document"
+            # format UUID and date properties
+            for prop in curr_entity["_properties"]:
+                if prop in date_properties:
+                    try:
+                        curr_entity["_properties"][prop] = datetime.fromtimestamp(
+                            int(curr_entity["_properties"][prop] / 1000)
+                        )
+                    except:
+                        curr_entity["_properties"][prop] = None
+                try:
+                    curr_entity["_properties"][prop] = UUID(curr_entity["_properties"][prop])
+                except:
+                    continue
+            # format id UUID
+            curr_entity["_id"] = UUID(curr_entity["_id"])
+            batch.append(curr_entity)
+        # apply final batch of edits to the knowledge graph
+        result = knowledgegraph_load.apply_edits(adds=batch)
+        # print error if one occurs during edit operation
+        try:
+            print(result["error"])
+        except:
+            print("No error adding entities")
+
+        # load relationships json file
+        with open(os.path.join(output_folder, all_rel), "r") as file:
+            original_rels = json.load(file)
+        batch = []
+        for curr_relationship in original_rels:
+            # if a batch reaches 20k records, apply that batch of edits to the knowledge graph
+            if len(batch) > 20000:
+                result = knowledgegraph_load.apply_edits(adds=batch)
+                batch = []
+                # print error if one occurs during edit operation
+                try:
+                    print(result["error"])
+                except:
+                    print("No error adding relationships")
+            # in case original document type name is different, change name to HasDocument
+            if curr_relationship["_typeName"] == doc_rel_type_name:
+                curr_relationship["_typeName"] = "HasDocument"
+            # format UUID and date properties
+            for prop in curr_relationship["_properties"]:
+                if prop in date_properties:
+                    try:
+                        curr_relationship["_properties"][prop] = datetime.fromtimestamp(
+                            int(curr_relationship["_properties"][prop] / 1000)
+                        )
+                    except:
+                        curr_relationship["_properties"][prop] = None
+                try:
+                    curr_relationship["_properties"][prop] = UUID(
+                        curr_relationship["_properties"][prop]
+                    )
+                except:
+                    continue
+            # format other relationship specific UUIDs
+            curr_relationship["_id"] = UUID(curr_relationship["_id"])
+            curr_relationship["_originEntityId"] = UUID(curr_relationship["_originEntityId"])
+            curr_relationship["_destinationEntityId"] = UUID(
+                curr_relationship["_destinationEntityId"]
+            )
+            batch.append(curr_relationship)
+        # apply final batch of edits to the knowledge graph
+        result = knowledgegraph_load.apply_edits(adds=batch)
+        # print error if one occurs during edit operation
+        try:
+            print(result["error"])
+        except:
+            print("No error adding relationships")
+
+        load_dm = knowledgegraph_load.datamodel
+        # add search indexes for all entity text properties
+        for entity_type in load_dm["entity_types"]:
+            prop_list = []
+            for prop in load_dm["entity_types"][entity_type]["properties"]:
+                if (
+                    load_dm["entity_types"][entity_type]["properties"][prop]["fieldType"]
+                    == "esriFieldTypeString"
+                ):
+                    prop_list.append(prop)
+            knowledgegraph_load.update_search_index(
+                adds={entity_type: {"property_names": prop_list}}
+            )
+
+        # add search indexes for all relationship text properties
+        for entity_type in load_dm["relationship_types"]:
+            prop_list = []
+            for prop in load_dm["relationship_types"][entity_type]["properties"]:
+                if (
+                    load_dm["relationship_types"][entity_type]["properties"][prop]["fieldType"]
+                    == "esriFieldTypeString"
+                ):
+                    prop_list.append(prop)
+            knowledgegraph_load.update_search_index(
+                adds={entity_type: {"property_names": prop_list}}
+            )
+
         return
 
     def postExecute(self, parameters):
