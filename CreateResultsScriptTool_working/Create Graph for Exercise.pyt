@@ -470,11 +470,10 @@ class CreateKGfromJSON(object):
         knowledgegraph_load = KnowledgeGraph(result.url, gis=gis)
 
         # load data model json files into graph data model
-        output_folder = parameters[2].value
-        subFolder = parameters[3].value
-        with open(os.path.join(output_folder, subFolder, dm_ent), "r") as file:
+        folderPathRoot = os.path.join(parameters[2].value, parameters[3].value)
+        with open(os.path.join(parameters[3].value, dm_ent), "r") as file:
             dm_ents = json.load(file)
-        with open(os.path.join(output_folder, dm_rel), "r") as file:
+        with open(os.path.join(parameters[3].value, dm_rel), "r") as file:
             dm_rels = json.load(file)
             knowledgegraph_load.named_object_type_adds(
             entity_types=dm_ents, relationship_types=dm_rels)
@@ -533,7 +532,7 @@ class CreateKGfromJSON(object):
                     date_properties.append(prop)
 
         # load entities json file
-        with open(os.path.join(output_folder, all_ent), "r") as file:
+        with open(os.path.join(parameters[3].value, all_ent), "r") as file:
             original_entities = json.load(file)
         batch = []
         for curr_entity in original_entities:
@@ -574,7 +573,7 @@ class CreateKGfromJSON(object):
             print("No error adding entities")
 
         # load relationships json file
-        with open(os.path.join(output_folder, all_rel), "r") as file:
+        with open(os.path.join(folderPathRoot, all_rel), "r") as file:
             original_rels = json.load(file)
         batch = []
         for curr_relationship in original_rels:
