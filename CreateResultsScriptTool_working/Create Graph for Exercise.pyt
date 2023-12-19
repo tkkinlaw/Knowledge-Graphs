@@ -532,7 +532,7 @@ class CreateKGfromJSON(object):
                     date_properties.append(prop)
 
         # load entities json file
-        with open(os.path.join(parameters[3].value, all_ent), "r") as file:
+        with open(os.path.join(folderPathRoot, all_ent), "r") as file:
             original_entities = json.load(file)
         batch = []
         for curr_entity in original_entities:
