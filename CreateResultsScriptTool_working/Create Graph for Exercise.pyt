@@ -471,9 +471,9 @@ class CreateKGfromJSON(object):
 
         # load data model json files into graph data model
         folderPathRoot = os.path.join(parameters[2].value, parameters[3].value)
-        with open(os.path.join(parameters[3].value, dm_ent), "r") as file:
+        with open(os.path.join(folderPathRoot, dm_ent), "r") as file:
             dm_ents = json.load(file)
-        with open(os.path.join(parameters[3].value, dm_rel), "r") as file:
+        with open(os.path.join(folderPathRoot, dm_rel), "r") as file:
             dm_rels = json.load(file)
             knowledgegraph_load.named_object_type_adds(
             entity_types=dm_ents, relationship_types=dm_rels)
