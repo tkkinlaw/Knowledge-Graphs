@@ -499,7 +499,7 @@ class CreateKGfromJSON(object):
         # load any additional document entity type properties
         origin_document_properties = None
         for entity_type in dm_ents:
-            if entity_type["name"] == "doc_type_name:
+            if entity_type["name"] == doc_type_name:
                 origin_document_properties = entity_type["properties"]
         prop_list = []
         for prop in origin_document_properties:
