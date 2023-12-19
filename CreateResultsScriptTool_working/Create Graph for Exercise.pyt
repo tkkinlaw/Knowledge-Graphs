@@ -480,7 +480,7 @@ class CreateKGfromJSON(object):
             entity_types=dm_ents, relationship_types=dm_rels
 
         # get document entity type name
-        doc_type_name = "Document"
+        doc_type_name = "Document"        
         for entity_type in dm_ents:
             for prop in entity_type["properties"]:
                 if entity_type["properties"][prop]["role"] == "esriGraphNamedObjectDocument":
@@ -499,7 +499,7 @@ class CreateKGfromJSON(object):
         # load any additional document entity type properties
         origin_document_properties = None
         for entity_type in dm_ents:
-            if entity_type["name"] == doc_type_name:
+            if entity_type["name"] == "Document":
                 origin_document_properties = entity_type["properties"]
         prop_list = []
         for prop in origin_document_properties:
@@ -547,7 +547,7 @@ class CreateKGfromJSON(object):
                 except:
                     print("No error adding entities")
             # in case original document type name is different, change name to Document
-            if curr_entity["_typeName"] == doc_type_name:
+            if curr_entity["_typeName"] == "Document":
                 curr_entity["_typeName"] = "Document"
             # format UUID and date properties
             for prop in curr_entity["_properties"]:
