@@ -484,7 +484,10 @@ class CreateKGfromJSON(object):
         for relationship_type in dm_rels:
             for prop in relationship_type["properties"]:
                 if (
-                    relationship_type["properties"][prop]["role"] == "esriGraphNamedObjectDocument"): doc_rel_type_name = relationship_type["name"]
+                    relationship_type["properties"][prop]["role"]
+                    == "esriGraphNamedObjectDocument"
+                ):
+                    doc_rel_type_name = relationship_type["name"]
 
         # load any additional document entity type properties
         origin_document_properties = None
