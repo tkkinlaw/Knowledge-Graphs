@@ -432,8 +432,6 @@ class CreateKGfromJSON(object):
         parameterType="Required",
         direction="Output")
 
-
-
         params = [paramUsername,paramPassword,paramJSONFolder,paramExNum,paramOutKG]
         return params
 
@@ -454,7 +452,16 @@ class CreateKGfromJSON(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        
+        # Define folder and file names
+        dm_ent = "datamodel_entities.json"
+        dm_rel = "datamodel_relationships.json"
+        all_ent = "all_entities.json"
+        all_rel = "all_relationships.json"
+        prov_file = "provenance_entities.json"  # this will only be used if you want to backup provenance records
+
+        # Connect to the GIS
+        gis = GIS("home")
+
         # create a knowledge graph without provenance enabled
         result = gis.content.create_service(
         name=parameters[4].value,
