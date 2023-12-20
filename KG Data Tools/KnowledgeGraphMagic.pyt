@@ -47,7 +47,7 @@ class BackupKGAsJSON(object):
         displayName="Exercise Number",
         name="Exercise_number",
         datatype="GPString",
-        parameterType="Required",
+        parameterType="Optional",
         direction="Input")
 
         paramExNum.filter.type = "ValueList"
@@ -108,7 +108,13 @@ class BackupKGAsJSON(object):
                 "properties": knowledgegraph_backup.datamodel["entity_types"][types]["properties"]}
             entity_types.append(curr_entity_type)
 
-        folderPathRoot = os.path.join(paramJSONFolder.value, paramExNum.value + "_" + kg_name)
+        # Check to see if the user provided a value for Exericse number. If not used, just use the KG name as the folder name.
+        
+        if len(paramExNum.value) > 0:
+            folderPathRoot = os.path.join(paramJSONFolder.value, paramExNum.value + "_" + kg_name)
+        else:
+            folderPathRoot = os.path.join(paramJSONFolder.value,kg_name)
+            
         if not os.path.exists(folderPathRoot):
             os.makedirs(folderPathRoot)
         with open(os.path.join(folderPathRoot, dm_ent), "w") as f:
