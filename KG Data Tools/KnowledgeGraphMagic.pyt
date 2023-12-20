@@ -57,7 +57,7 @@ class BackupKGAsJSON(object):
         paramJSONFolder = arcpy.Parameter(
         displayName="Folder Knowledge Graph Backups",
         name="Folder_Knowledge_Graph_Backups",
-        datatype="GPString",
+        datatype="DEWorkspace",
         parameterType="Required",
         direction="Output")
 
@@ -114,7 +114,7 @@ class BackupKGAsJSON(object):
             folderPathRoot = os.path.join(paramJSONFolder.value, paramExNum.value + "_" + kg_name)
         else:
             folderPathRoot = os.path.join(paramJSONFolder.value,kg_name)
-            
+
         if not os.path.exists(folderPathRoot):
             os.makedirs(folderPathRoot)
         with open(os.path.join(folderPathRoot, dm_ent), "w") as f:
