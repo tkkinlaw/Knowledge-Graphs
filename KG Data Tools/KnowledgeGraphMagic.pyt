@@ -59,7 +59,7 @@ class BackupKGAsJSON(object):
         name="Folder_Knowledge_Graph_Backups",
         datatype="DEWorkspace",
         parameterType="Required",
-        direction="Output")
+        direction="Input")
 
         params = [paramInputKG, paramJSONFolder, paramExNum]
         return params
@@ -110,10 +110,10 @@ class BackupKGAsJSON(object):
 
         # Check to see if the user provided a value for Exericse number. If not used, just use the KG name as the folder name.
         
-        if len(paramExNum.value) > 0:
-            folderPathRoot = os.path.join(paramJSONFolder.value, paramExNum.value + "_" + kg_name)
+        if paramExNum.value == type(None):
+            folderPathRoot = os.path.join(paramJSONFolder.valueAsText, paramExNum.valueAsText + "_" + kg_name)
         else:
-            folderPathRoot = os.path.join(paramJSONFolder.value,kg_name)
+            folderPathRoot = os.path.join(paramJSONFolder.valueAsText, kg_name)
 
         if not os.path.exists(folderPathRoot):
             os.makedirs(folderPathRoot)
