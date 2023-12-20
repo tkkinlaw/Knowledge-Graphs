@@ -23,6 +23,7 @@ class BackupKGAsJSON(object):
         self.label = "Backup Knowledge Graph as JSON"
         self.description = "This python script tool can be used within ArcGIS Pro to create a knowledge graph to begin an exercise. Use this tool if you did not complete an exercise properly. The JSON folder location is hard coded to: C:\backups\myknowledgegraph_backup"
         self.canRunInBackground = False
+        self.category = "1 Backup KG Tools"
 
     def getParameterInfo(self):
         """Define parameter definitions"""     
@@ -381,6 +382,7 @@ class CreateKGfromJSON(object):
         self.label = "Create Knowledge Graph from JSON"
         self.description = "This tool will create a Knowledge Graph from a folder of JSON files. This creates the entity types, relationship types, and loads the entities."
         self.canRunInBackground = False
+        self.category = "1 Backup KG Tools"
 
     def getParameterInfo(self):
         """Define parameter definitions"""
