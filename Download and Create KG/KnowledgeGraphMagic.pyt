@@ -14,7 +14,7 @@ class Toolbox(object):
         self.alias = "Knowledge Graph Magic"
 
         # List of tool classes associated with this toolbox
-        self.tools = [BackupKGAsJSON,CreateKGfromJSON]
+        self.tools = [BackupKGAsJSON,CreateKGfromJSON,SaveGeodatabase,XMLToGDB]
 
 
 class BackupKGAsJSON(object):
@@ -23,7 +23,7 @@ class BackupKGAsJSON(object):
         self.label = "Backup Knowledge Graph as JSON"
         self.description = "This python script tool can be used within ArcGIS Pro to create a knowledge graph to begin an exercise. Use this tool if you did not complete an exercise properly. The JSON folder location is hard coded to: C:\backups\myknowledgegraph_backup"
         self.canRunInBackground = False
-        self.category = "1 Backup KG Tools"
+        self.category = "Backup KG Tools"
 
     def getParameterInfo(self):
         """Define parameter definitions"""     
@@ -382,7 +382,7 @@ class CreateKGfromJSON(object):
         self.label = "Create Knowledge Graph from JSON"
         self.description = "This tool will create a Knowledge Graph from a folder of JSON files. This creates the entity types, relationship types, and loads the entities."
         self.canRunInBackground = False
-        self.category = "1 Backup KG Tools"
+        self.category = "Backup KG Tools"
 
     def getParameterInfo(self):
         """Define parameter definitions"""
@@ -654,3 +654,138 @@ class CreateKGfromJSON(object):
         """This method takes place after outputs are processed and
         added to the display."""
         return
+
+class SaveGeodatabase:
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = "Back up simple Geodatabase as XML"
+        self.description = "Back up simple Geodatabase as XML"
+        self.category = "Backup File Geodatabase Tools"
+
+    def getParameterInfo(self):
+        """Define the tool parameters."""
+        inGDB = arcpy.Parameter(
+        displayName="Input Geodatabase",
+        name="Input_Geodatabase",
+        datatype="DEWorkspace",
+        parameterType="Required",
+        direction="Input")
+
+        xmlLoc = arcpy.Parameter(
+        displayName="Output XML Workspace Location",
+        name="Output_XML_Workspace_Location",
+        datatype="DEFolder",
+        parameterType="Required",
+        direction="Input")
+
+        xmlName = arcpy.Parameter(
+        displayName="Output XML Workspace Name",
+        name="Output_XML_Workspace_Name",
+        datatype="GPString",
+        parameterType="Required",
+        direction="Input")
+
+        params = [inGDB, xmlLoc, xmlName]
+        return params
+
+    def isLicensed(self):
+        """Set whether the tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter. This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        inGDB = parameters[0].valueAsText
+        outXMLLoc = parameters[1].valueAsText
+        outXMLName = parameters[2].valueAsText
+        outXML = os.path.join(outXMLLoc, outXMLName + ".xml")
+        arcpy.AddMessage(f"Exporting the data from {inGDB} to: {outXML}")
+        arcpy.management.ExportXMLWorkspaceDocument(in_data=inGDB, out_file=outXML, export_type="DATA", storage_type="BINARY", export_metadata="METADATA")
+        return
+
+    def postExecute(self, parameters):
+        """This method takes place after outputs are processed and
+        added to the display."""
+        return
+    
+class XMLToGDB:
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = "Create file geodatabase from XML"
+        self.description = "Create file geodatabase from XML"
+        self.category = "Backup File Geodatabase Tools"
+
+    def getParameterInfo(self):
+        """Define the tool parameters."""
+        gdbLoc = arcpy.Parameter(
+        displayName="New Geodatabase Location",
+        name="New_Geodatabase_Location",
+        datatype="DEWorkspace",
+        parameterType="Required",
+        direction="Input")
+
+        gdbName = arcpy.Parameter(
+        displayName="New Geodatabase Name",
+        name="New_Geodatabase_Name",
+        datatype="GPString",
+        parameterType="Required",
+        direction="Output")
+
+        inXML = arcpy.Parameter(
+        displayName="Input XML Workspace",
+        name="Input_XML_Workspace",
+        datatype="DEFile",
+        parameterType="Required",
+        direction="Input")
+
+        # Set a filter on the inXML parameter so only XML files can be the input
+        inXML.filter.list = ["xml"]
+
+        params = [gdbLoc, gdbName, inXML]
+        return params
+
+    def isLicensed(self):
+        """Set whether the tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter. This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        gdbLoc = parameters[0].valueAsText
+        gdbName = parameters[1].valueAsText + ".gdb"
+        inXML = parameters[2].valueAsText
+
+        outGDB = os.path.join(gdbLoc, gdbName)
+
+        arcpy.management.CreateFileGDB(out_folder_path=gdbLoc, out_name=gdbName)
+        arcpy.AddMessage(f"{outGDB} created. Importing data.")
+        arcpy.management.ImportXMLWorkspaceDocument(target_geodatabase=outGDB, in_file=inXML, import_type="DATA")
+        arcpy.AddMessage(f"Data imported from {inXML}")
+        arcpy.AddMessage("Process complete.")
+        return
+
+    def postExecute(self, parameters):
+        """This method takes place after outputs are processed and
+        added to the display."""
+        return
+
