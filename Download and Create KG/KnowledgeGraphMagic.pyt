@@ -60,7 +60,6 @@ class BackupKGAsJSON(object):
         datatype="GPString",
         parameterType="Required",
         direction="Output")
-        paramJSONFolder.value = r"C:\backups\myknowledgegraph_backup"
 
         params = [paramInputKG, paramJSONFolder, paramExNum]
         return params
@@ -84,9 +83,9 @@ class BackupKGAsJSON(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         # Variablizing the parameters to make them more accessible
-        paramInputKG = parameters[0] # 0
-        paramJSONFolder = parameters[1] # 1
-        paramExNum = parameters[2] # 2
+        paramInputKG = parameters[0]
+        paramJSONFolder = parameters[1]
+        paramExNum = parameters[2]
 
         # Define folder and file names
         dm_ent = "datamodel_entities.json"
@@ -201,54 +200,24 @@ class CreateKGfromJSON(object):
     def getParameterInfo(self):
         """Define parameter definitions"""
         gis = GIS("home")
-        
-        # Username
-        paramUsername = arcpy.Parameter(
-        displayName="Enterprise Portal Username",
-        name="Enterprise_Portal_Username",
-        datatype="GPString",
-        parameterType="Required",
-        direction="Input",
-        category = "Connect to the GIS")
-
-        # Password
-        paramPassword = arcpy.Parameter(
-        displayName="Enterprise Portal Password",
-        name="Enterprise_Portal_Password",
-        datatype="GPString",
-        parameterType="Required",
-        direction="Input",
-        category = "Connect to the GIS")
 
         # Declare input folder for JSON files
         paramJSONFolder = arcpy.Parameter(
-        displayName="Folder Knowledge Graph Backups",
-        name="Folder_Knowledge_Graph_Backups",
-        datatype="GPString",
+        displayName="Folder of JSON Files",
+        name="Folder_of_JSON_Files",
+        datatype="DEWorkspace",
         parameterType="Required",
         direction="Input")
-        paramJSONFolder.value = r"C:\backups\myknowledgegraph_backup"
-
-        # Exercise number. For which lesson do you want to save a starting KG for, or create one for?
-        paramExNum = arcpy.Parameter(
-        displayName="Exercise Number",
-        name="Exercise_number",
-        datatype="GPString",
-        parameterType="Required",
-        direction="Input")
-
-        paramExNum.filter.type = "ValueList"
-        paramExNum.filter.list = ["1", "2", "3a", "3b"]
-
+        
         # Output KG name
         paramOutKG = arcpy.Parameter(
-        displayName="Output Knowledge Graph Name",
-        name="Output_Knowledge_Graph_Name",
+        displayName="New Knowledge Graph Name",
+        name="New_Knowledge_Graph_Name",
         datatype="GPString",
         parameterType="Required",
         direction="Output")
 
-        params = [paramUsername,paramPassword,paramJSONFolder,paramExNum,paramOutKG]
+        params = [paramJSONFolder,paramOutKG]
         return params
 
     def isLicensed(self):
@@ -269,11 +238,8 @@ class CreateKGfromJSON(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         # Variablizing parameters
-        paramUsername # 0
-        paramPassword # 1
-        paramJSONFolder # 2
-        paramExNum # 3
-        paramOutKG # 4
+        paramJSONFolder = parameters[0]
+        paramOutKG = parameters[1]
 
         # Define folder and file names
         dm_ent = "datamodel_entities.json"
@@ -287,13 +253,13 @@ class CreateKGfromJSON(object):
 
         # create a knowledge graph without provenance enabled
         result = gis.content.create_service(
-        name=parameters[4].value,
+        name=paramOutKG.value,
         capabilities="Query,Editing,Create,Update,Delete",
         service_type="KnowledgeGraph")
         knowledgegraph_load = KnowledgeGraph(result.url, gis=gis)
 
         # load data model json files into graph data model
-        folderPathRoot = os.path.join(parameters[2].value, parameters[3].value)
+        folderPathRoot = paramJSONFolder.valueAsText
         with open(os.path.join(folderPathRoot, dm_ent), "r") as file:
             dm_ents = json.load(file)
         with open(os.path.join(folderPathRoot, dm_rel), "r") as file:
