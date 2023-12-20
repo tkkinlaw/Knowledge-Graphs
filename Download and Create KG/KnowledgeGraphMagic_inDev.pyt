@@ -28,22 +28,6 @@ class BackupKGAsJSON(object):
     def getParameterInfo(self):
         """Define parameter definitions"""     
         gis = GIS("home")
-        
-        # Username
-        paramUsername = arcpy.Parameter(
-        displayName="Enterprise Portal Username",
-        name="Enterprise_Portal_Username",
-        datatype="GPString",
-        parameterType="Required",
-        direction="Input")
-
-        # Password
-        paramPassword = arcpy.Parameter(
-        displayName="Enterprise Portal Password",
-        name="Enterprise_Portal_Password",
-        datatype="GPStringHidden",
-        parameterType="Required",
-        direction="Input")
 
         # Input KG to export to JSON files
         kgItems = [item for item in gis.content.search("type:Knowledge Graph", item_type="Knowledge Graph")]
@@ -78,7 +62,7 @@ class BackupKGAsJSON(object):
         direction="Output")
         paramJSONFolder.value = r"C:\backups\myknowledgegraph_backup"
 
-        params = [paramUsername, paramPassword, paramInputKG, paramJSONFolder, paramExNum]
+        params = [paramInputKG, paramJSONFolder, paramExNum]
         return params
 
     def isLicensed(self):
@@ -100,17 +84,9 @@ class BackupKGAsJSON(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         # Variablizing the parameters to make them more accessible
-        paramUsername = parameters[0] # 0
-        paramPassword =parameters[1] # 1
-        paramInputKG = parameters[2] # 2
-        paramJSONFolder = parameters[3] # 3
-        paramExNum = parameters[4] # 4
-
-
-        
-         
-
-
+        paramInputKG = parameters[0] # 0
+        paramJSONFolder = parameters[1] # 1
+        paramExNum = parameters[2] # 2
 
         # Define folder and file names
         dm_ent = "datamodel_entities.json"
@@ -120,9 +96,10 @@ class BackupKGAsJSON(object):
         prov_file = "provenance_entities.json"  # this will only be used if you want to backup provenance records
 
         #Connect to the Enterprise Portal
-        #url = arcpy.GetActivePortalURL()
         gis = GIS("home")
+        
         knowledgegraph_backup = KnowledgeGraph(url=paramInputKG.value, gis=gis)
+        kg_name = gis.content.search(knowledgegraph_backup.properties['serviceItemId'])[0].name
 
         # Create backup files
         entity_types = []
@@ -132,7 +109,7 @@ class BackupKGAsJSON(object):
                 "properties": knowledgegraph_backup.datamodel["entity_types"][types]["properties"]}
             entity_types.append(curr_entity_type)
 
-        folderPathRoot = os.path.join(paramJSONFolder.value, paramExNum.value)
+        folderPathRoot = os.path.join(paramJSONFolder.value, paramExNum.value + "_" + kg_name)
         if not os.path.exists(folderPathRoot):
             os.makedirs(folderPathRoot)
         with open(os.path.join(folderPathRoot, dm_ent), "w") as f:
