@@ -44,8 +44,8 @@ class BackupKGAsJSON(object):
 
         # Exercise number. For which lesson do you want to save a starting KG for, or create one for?
         paramExNum = arcpy.Parameter(
-        displayName="Exercise Number",
-        name="Exercise_number",
+        displayName="Folder Name",
+        name="Folder_name",
         datatype="GPString",
         parameterType="Optional",
         direction="Input")
@@ -72,7 +72,12 @@ class BackupKGAsJSON(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
-
+        
+        if parameters[2].valueAsText != None and parameters[2].value not in parameters[2].filter.list:
+            parameters[2].filter.list = [] # when you do not want a filter, set it to an empty list
+            parameters[2].value = parameters[2].value
+        else:
+            pass
         return
 
     def updateMessages(self, parameters):
