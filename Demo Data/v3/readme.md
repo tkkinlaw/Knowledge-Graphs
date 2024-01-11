@@ -11,3 +11,6 @@ The <code>Assign Parts to Product.ipynb</code> file appends "clean values" to th
 The ContextualDataGeodatabase.xml includes:
 - HurricanePath
 - HurricanePath_buffer
+
+The SupplyChain folder that is the backed up knowledge graph has the following data model:
+![Supply chain data model](SupplyChainDataModel.png, "Knowledge Graph Data Model")
