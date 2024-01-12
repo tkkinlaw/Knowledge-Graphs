@@ -1,6 +1,6 @@
 This is a Patent application file.
-Product 2
-Applicant: Kim PLC
-Inventor: Casey Taylor
-Application number: 43/104,816
-Filed: Oct. 05, 2023
+Name of the product: Product 2
+The organization that submitted the patent application: Kim PLC
+The person who created this product is the inventor: Daniel Knight
+The patent's application number: 22/611,770
+Date the patent was filed: Mar. 26, 2024

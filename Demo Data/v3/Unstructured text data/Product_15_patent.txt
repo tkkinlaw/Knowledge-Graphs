@@ -1,6 +1,6 @@
 This is a Patent application file.
-Product 15
-Applicant: Bell Ltd
-Inventor: Zachary Gonzalez
-Application number: 80/532,254
-Filed: Mar. 26, 2024
+Name of the product: Product 15
+The organization that submitted the patent application: Bell Ltd
+The person who created this product is the inventor: Jessica Franco
+The patent's application number: 20/861,462
+Date the patent was filed: Mar. 10, 2024
