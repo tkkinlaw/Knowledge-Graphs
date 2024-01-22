@@ -1,0 +1,6 @@
+This is a Patent application file.
+Name of the product: Product 1
+The organization that submitted the patent application: Wood, Gonzalez and Carter
+The person who created this product is the inventor: Steven Miles
+The patent's application number: 65/428,313
+Date the patent was filed: Sep. 09, 2023
