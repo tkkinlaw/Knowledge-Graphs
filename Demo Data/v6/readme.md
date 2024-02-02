@@ -19,12 +19,12 @@ The ContextualDataGeodatabase.xml includes:
 - Use this KG for the Lesson 3A demo. 
 - This KG contains clean and messy entities added for Product, Company, and SellsProduct entities & relationships
 - This is the Knowledge graph feeding the two mapx files used in the demo: Structured Data Evaluation (Messy).mapx & Structured Data Evaluation (Clean).mapx
-![L3_SupplyChain](Demo Data\v6\images\SupplyChain.png)
+![L3_SupplyChain](images/SupplyChain.png)
 ### SupplyChain
 - This is the KG to start Lesson 4 with. 
 - It does not contain the Product, Company, and SellsProduct entities & relationships
-![SupplyChain](Demo Data\v6\images\SupplyChain_Demo3A.png)
+![SupplyChain](images/SupplyChain_Demo3A.png)
 ### SupplyChain_EndL4
 - This is the KG created by the end of the lesson 4 demo.
-![SupplyChain_L4End](Demo Data\v6\images\SupplyChain_L4End.png)
+![SupplyChain_L4End](images/SupplyChain_L4End.png)
 
