@@ -22,7 +22,7 @@ The ContextualDataGeodatabase.xml includes:
 
 ![SupplyChain](images/SupplyChain_Demo3A.png)
 ### SupplyChain
-- This is the KG to for demos 1 & 4 Lesson 4. 
+- Use this KG to for demos 1 & 4 Lesson 4. 
 - It does not contain the Product, Company, and SellsProduct entities & relationships
 
 ![L3_SupplyChain](images/SupplyChain.png)
