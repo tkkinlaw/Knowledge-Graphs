@@ -31,3 +31,9 @@ The ContextualDataGeodatabase.xml includes:
 
 ![SupplyChain_L4End](images/SupplyChain_L4End.png)
 
+To create this data on your machine, you will:
+1. Create an ArcGIS Pro project on your VM. 
+2. Add the KnowledgeGraphMagic.pyt to your project's toolboxes. 
+3. Run the Create KG from JSON script. (See the notes above to determine which folder should be your input)
+4. Create a new investigation in that project & point to the newly created KG in your portal.
+5. If practicing demo 3a, you will need to import the 2 mapx files (which are link charts) into your project, and likely need to repair the paths to the KG service.
