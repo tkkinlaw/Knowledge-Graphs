@@ -43,15 +43,15 @@ class BackupKGAsJSON(object):
         paramInputKG.filter.list = [item.url for item in kgItems]
 
         # Exercise number. For which lesson do you want to save a starting KG for, or create one for?
-        paramExNum = arcpy.Parameter(
+        paramFolderName = arcpy.Parameter(
         displayName="Folder Name",
         name="Folder_name",
         datatype="GPString",
         parameterType="Optional",
         direction="Input")
 
-        paramExNum.filter.type = "ValueList"
-        paramExNum.filter.list = ["1", "2", "3a", "3b"]
+        paramFolderName.filter.type = "ValueList"
+        paramFolderName.filter.list = ["1", "2", "3a", "3b"]
 
         # Declare output folder for JSON files
         paramJSONFolder = arcpy.Parameter(
@@ -61,7 +61,7 @@ class BackupKGAsJSON(object):
         parameterType="Required",
         direction="Input")
 
-        params = [paramInputKG, paramJSONFolder, paramExNum]
+        params = [paramInputKG, paramJSONFolder, paramFolderName]
         return params
 
     def isLicensed(self):
@@ -90,7 +90,7 @@ class BackupKGAsJSON(object):
         # Variablizing the parameters to make them more accessible
         paramInputKG = parameters[0]
         paramJSONFolder = parameters[1]
-        paramExNum = parameters[2]
+        paramFolderName = parameters[2]
 
         # Define folder and file names
         dm_ent = "datamodel_entities.json"
@@ -100,6 +100,7 @@ class BackupKGAsJSON(object):
         prov_file = "provenance_entities.json"  # this will only be used if you want to backup provenance records
 
         #Connect to the Enterprise Portal
+        arcpy.AddMessage("Connecting to portal")
         gis = gis = GIS("Home",verify_cert=False)
         
         knowledgegraph_backup = KnowledgeGraph(url=paramInputKG.value, gis=gis)
@@ -113,12 +114,14 @@ class BackupKGAsJSON(object):
                 "properties": knowledgegraph_backup.datamodel["entity_types"][types]["properties"]}
             entity_types.append(curr_entity_type)
 
-        # Check to see if the user provided a value for Exericse number. If not used, just use the KG name as the folder name.
+        # Check to see if the user provided a value for the output folder. If not used, just use the KG name as the folder name.
         
-        if paramExNum.value == type(None):
-            folderPathRoot = os.path.join(paramJSONFolder.valueAsText, paramExNum.valueAsText + "_" + kg_name)
+        if paramFolderName.value == type(None):
+            folderPathRoot = os.path.join(paramJSONFolder.valueAsText, paramFolderName.valueAsText + "_" + kg_name)
         else:
-            folderPathRoot = os.path.join(paramJSONFolder.valueAsText, paramExNum.value)
+            folderPathRoot = os.path.join(paramJSONFolder.valueAsText, paramFolderName.value)
+
+        arcpy.AddMessage("Writing entity types to JSON")
 
         if not os.path.exists(folderPathRoot):
             os.makedirs(folderPathRoot)
@@ -126,6 +129,7 @@ class BackupKGAsJSON(object):
             json.dump(entity_types, f)
         
         # Write data model relationship types to backup JSON file
+        arcpy.AddMessage("Writing relationship types to JSON")
         relationship_types = []
         for types in knowledgegraph_backup.datamodel["relationship_types"]:
             curr_relationship_type = {
@@ -137,6 +141,7 @@ class BackupKGAsJSON(object):
             json.dump(relationship_types, f)
 
         # Write entities to backup JSON file
+        arcpy.AddMessage("Writing all entities to JSON")
         original_entities = knowledgegraph_backup.query_streaming("MATCH (n) RETURN distinct n")
         
         all_entities_fromquery = []
@@ -155,6 +160,7 @@ class BackupKGAsJSON(object):
             json.dump(all_entities_fromquery, f)
         
         # Write relationships to backup JSON file
+        arcpy.AddMessage("Writing all relationships to JSON")
         original_relationships = knowledgegraph_backup.query_streaming("MATCH ()-[rel]->() RETURN distinct rel")
         all_relationships_fromquery = []
         for relationship in list(original_relationships):
@@ -171,6 +177,7 @@ class BackupKGAsJSON(object):
             all_relationships_fromquery.append(curr_relationship)
 
         # OPTIONAL: Write provenance records to backup json file
+        arcpy.AddMessage("Writing provenance to JSON")
         provenance_entities = knowledgegraph_backup.query_streaming("MATCH (n:Provenance) RETURN distinct n", include_provenance=True)
 
         with open(os.path.join(folderPathRoot, all_rel), "w") as f:
