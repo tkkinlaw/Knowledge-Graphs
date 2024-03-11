@@ -27,7 +27,7 @@ class BackupKGAsJSON(object):
 
     def getParameterInfo(self):
         """Define parameter definitions"""     
-        gis = GIS("home")
+        gis = gis = GIS("Home",verify_cert=False)
 
         # Input KG to export to JSON files
         kgItems = [item for item in gis.content.search("type:Knowledge Graph", item_type="Knowledge Graph")]
@@ -100,7 +100,7 @@ class BackupKGAsJSON(object):
         prov_file = "provenance_entities.json"  # this will only be used if you want to backup provenance records
 
         #Connect to the Enterprise Portal
-        gis = GIS("home")
+        gis = gis = GIS("Home",verify_cert=False)
         
         knowledgegraph_backup = KnowledgeGraph(url=paramInputKG.value, gis=gis)
         kg_name = gis.content.search(knowledgegraph_backup.properties['serviceItemId'])[0].name
@@ -210,7 +210,7 @@ class CreateKGfromJSON(object):
 
     def getParameterInfo(self):
         """Define parameter definitions"""
-        gis = GIS("home")
+        gis = gis = GIS("Home",verify_cert=False)
 
         # Declare input folder for JSON files
         paramJSONFolder = arcpy.Parameter(
@@ -260,13 +260,14 @@ class CreateKGfromJSON(object):
         prov_file = "provenance_entities.json"  # this will only be used if you want to backup provenance records
 
         # Connect to the GIS
-        gis = GIS("home")
+        gis = gis = GIS("Home",verify_cert=False)
 
         # create a knowledge graph without provenance enabled
-        result = gis.content.create_service(
-        name=paramOutKG.value,
-        capabilities="Query,Editing,Create,Update,Delete",
-        service_type="KnowledgeGraph")
+        #result = gis.content.create_service(
+        #name=paramOutKG.value,
+        #capabilities="Query,Editing,Create,Update,Delete",
+        #service_type="KnowledgeGraph")
+        result = gis.content.create_service(name=f"{paramOutKG.value}", service_type="KnowledgeGraph",create_params={"name": f"{paramOutKG.value}", "capabilities": "Query", "jsonProperties": {"supportsProvenance": True}})
         knowledgegraph_load = KnowledgeGraph(result.url, gis=gis)
 
         # load data model json files into graph data model
@@ -445,6 +446,23 @@ class CreateKGfromJSON(object):
             knowledgegraph_load.update_search_index(
                 adds={entity_type: {"property_names": prop_list}}
             )
+
+        # load provenance records json file
+        with open(os.path.join(folderPathRoot, prov_file), "r") as file:
+            prov_entities = json.load(file)
+
+        # add all provenance records
+        for curr_prov in prov_entities:
+            # format UUID properties
+            for prop in curr_prov["_properties"]:
+                try:
+                    curr_prov["_properties"][prop] = UUID(curr_prov["_properties"][prop])
+                except:
+                    continue
+            # format id as UUID
+            curr_prov["_id"] = UUID(curr_prov["_id"])
+            # add provenance record
+            knowledgegraph_load.apply_edits(adds=[curr_prov])
 
         return
 
