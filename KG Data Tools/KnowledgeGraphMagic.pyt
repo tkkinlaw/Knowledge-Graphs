@@ -118,7 +118,7 @@ class BackupKGAsJSON(object):
         if paramExNum.value == type(None):
             folderPathRoot = os.path.join(paramJSONFolder.valueAsText, paramExNum.valueAsText + "_" + kg_name)
         else:
-            folderPathRoot = os.path.join(paramJSONFolder.valueAsText, kg_name)
+            folderPathRoot = os.path.join(paramJSONFolder.valueAsText, paramExNum.value)
 
         if not os.path.exists(folderPathRoot):
             os.makedirs(folderPathRoot)
