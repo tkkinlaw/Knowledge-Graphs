@@ -22,7 +22,6 @@ class BackupKGAsJSON(object):
         self.label = "Backup Knowledge Graph as JSON"
         self.description = "This python script tool can be used within ArcGIS Pro to create a knowledge graph to begin an exercise. Use this tool if you did not complete an exercise properly. The JSON folder location is hard coded to: C:\backups\myknowledgegraph_backup"
         self.canRunInBackground = False
-        self.category = "Backup Knowledge Graph Tools"
 
     def getParameterInfo(self):
         """Define parameter definitions"""     
@@ -71,17 +70,17 @@ class BackupKGAsJSON(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
-        
-        if parameters[2].valueAsText != None and parameters[2].value not in parameters[2].filter.list:
-            parameters[2].filter.list = [] # when you do not want a filter, set it to an empty list
-            parameters[2].value = parameters[2].value
-        else:
-            pass
+
+
         return
 
     def updateMessages(self, parameters):
         """Modify the messages created by internal validation for each tool
         parameter.  This method is called after internal validation."""
+        if parameters[0].altered:
+            parameters[2].setWarningMessage(arcpy.da.Describe(parameters[0])['name'])
+        else:
+            pass
         return
 
     def execute(self, parameters, messages):
@@ -212,7 +211,6 @@ class CreateKGfromJSON(object):
         self.label = "Create Knowledge Graph from JSON"
         self.description = "This tool will create a Knowledge Graph from a folder of JSON files. This creates the entity types, relationship types, and loads the entities."
         self.canRunInBackground = False
-        self.category = "Backup Knowledge Graph Tools"
 
     def getParameterInfo(self):
         """Define parameter definitions"""
