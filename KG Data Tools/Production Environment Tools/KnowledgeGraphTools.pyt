@@ -48,9 +48,6 @@ class BackupKGAsJSON(object):
         parameterType="Optional",
         direction="Input")
 
-        paramFolderName.filter.type = "ValueList"
-        paramFolderName.filter.list = ["1", "2", "3a", "3b"]
-
         # Declare output folder for JSON files
         paramJSONFolder = arcpy.Parameter(
         displayName="Folder Knowledge Graph Backups",
@@ -59,7 +56,15 @@ class BackupKGAsJSON(object):
         parameterType="Required",
         direction="Input")
 
-        params = [paramInputKG, paramJSONFolder, paramFolderName]
+        # Declare output folder for JSON files
+        paramItemDetails = arcpy.Parameter(
+        displayName="Download metadata",
+        name="Download_metadata",
+        datatype="GPBoolean",
+        parameterType="Optional",
+        direction="Input")
+
+        params = [paramInputKG, paramJSONFolder, paramFolderName, paramItemDetails]
         return params
 
     def isLicensed(self):
@@ -70,17 +75,16 @@ class BackupKGAsJSON(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
-
-
+        if parameters[0].hasBeenValidated == False:
+            if parameters[0].altered:
+                parameters[2].value = arcpy.da.Describe(parameters[0].value)['name']
+        else:
+            pass
         return
 
     def updateMessages(self, parameters):
         """Modify the messages created by internal validation for each tool
         parameter.  This method is called after internal validation."""
-        if parameters[0].altered:
-            parameters[2].setWarningMessage(arcpy.da.Describe(parameters[0])['name'])
-        else:
-            pass
         return
 
     def execute(self, parameters, messages):
@@ -89,6 +93,7 @@ class BackupKGAsJSON(object):
         paramInputKG = parameters[0]
         paramJSONFolder = parameters[1]
         paramFolderName = parameters[2]
+        paramItemDetails = parameters[3]
 
         # Define folder and file names
         dm_ent = "datamodel_entities.json"
@@ -198,11 +203,38 @@ class BackupKGAsJSON(object):
 
         with open(os.path.join(folderPathRoot, prov_file), "w") as f:
             json.dump(all_provenance_fromquery, f)
+
+        # This code downloads the following item details:
+        # Title, snippet (summary), description, tags, and thumbnail
+        
+        if paramItemDetails.value:
+            arcpy.AddMessage('Writing item details files')
+            # Variables
+            inputKG = gis.content.search(knowledgegraph_backup.properties['serviceItemId'])[0] #item ID
+            resourcePath = folderPathRoot #folder to other JSON files
+
+            # Format items as JSON & Dictionary
+            prop = {
+                "title":inputKG.title,
+                "description": inputKG.description,
+                "snippet": inputKG.snippet,
+                "tags": inputKG.tags
+            }
+
+            # Convert and write JSON object to file
+            outData = os.path.join(resourcePath,"itemDetails.json")
+            with open(outData, "w") as outfile: 
+                json.dump(prop, outfile)
+
+            inputKG.download_thumbnail(resourcePath)
+        else:
+            arcpy.AddMessage('Skipping item details')
+            pass
         return
 
-    def postExecute(self, parameters):
-        """This method takes place after outputs are processed and
-        added to the display."""
+        def postExecute(self, parameters):
+            """This method takes place after outputs are processed and
+            added to the display."""
         return
 
 class CreateKGfromJSON(object):
@@ -232,7 +264,15 @@ class CreateKGfromJSON(object):
         parameterType="Required",
         direction="Output")
 
-        params = [paramJSONFolder,paramOutKG]
+        # Declare output folder for JSON files
+        paramItemDetails = arcpy.Parameter(
+        displayName="Upload metadata",
+        name="Upload_metadata",
+        datatype="GPBoolean",
+        parameterType="Optional",
+        direction="Input")
+
+        params = [paramJSONFolder,paramOutKG,paramItemDetails]
         return params
 
     def isLicensed(self):
@@ -243,6 +283,11 @@ class CreateKGfromJSON(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+        if parameters[0].hasBeenValidated == False:
+            if parameters[0].altered:
+                parameters[1].value = arcpy.da.Describe(parameters[0].value)['name']
+        else:
+            pass
         return
 
     def updateMessages(self, parameters):
@@ -255,6 +300,7 @@ class CreateKGfromJSON(object):
         # Variablizing parameters
         paramJSONFolder = parameters[0]
         paramOutKG = parameters[1]
+        paramItemDetails = parameters[2]
 
         # Define folder and file names
         dm_ent = "datamodel_entities.json"
@@ -467,6 +513,25 @@ class CreateKGfromJSON(object):
             curr_prov["_id"] = UUID(curr_prov["_id"])
             # add provenance record
             knowledgegraph_load.apply_edits(adds=[curr_prov])
+
+        # This code downloads the following item details:
+        # Title, snippet (summary), description, tags, and thumbnail
+        if paramItemDetails.value:
+            arcpy.AddMessage('Uploading item details information')
+            # Variables
+            targetKG = gis.content.search(knowledgegraph_load.properties['serviceItemId'])[0] #item ID
+            resourcePath = folderPathRoot  #folder to other JSON files
+            
+            inData = os.path.join(resourcePath, "itemDetails.json")
+            with open(inData, 'r') as infile:
+                jItemDetails = json.load(infile)
+
+            with arcpy.EnvManager(workspace=resourcePath):
+                thumbnail = os.path.join(resourcePath, arcpy.ListRasters()[0])
+
+            targetKG.update(item_properties = jItemDetails, thumbnail = thumbnail)
+        else:
+            arcpy.AddMessage('Item detail ignored.')
 
         return
 
