@@ -10,8 +10,8 @@ class Toolbox(object):
     def __init__(self):
         """Define the toolbox (the name of the toolbox is the name of the
         .pyt file)."""
-        self.label = "Knowledge Graph Magic"
-        self.alias = "Knowledge Graph Magic"
+        self.label = "Knowledge Graph Tools"
+        self.alias = "Knowledge Graph Tools".replace(" ","")
 
         # List of tool classes associated with this toolbox
         self.tools = [BackupKGAsJSON,CreateKGfromJSON]
@@ -19,7 +19,9 @@ class Toolbox(object):
 class BackupKGAsJSON(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = "Backup Knowledge Graph as JSON"
+        textTool1 = "Backup Knowledge Graph as JSON"
+        self.label = textTool1
+        self.alias = textTool1.replace(" ","")
         self.description = "This python script tool can be used within ArcGIS Pro to create a knowledge graph to begin an exercise. Use this tool if you did not complete an exercise properly. The JSON folder location is hard coded to: C:\backups\myknowledgegraph_backup"
         self.canRunInBackground = False
 
@@ -40,26 +42,26 @@ class BackupKGAsJSON(object):
         paramInputKG.filter.type = "ValueList"
         paramInputKG.filter.list = [item.url for item in kgItems]
 
-        # Exercise number. For which lesson do you want to save a starting KG for, or create one for?
-        paramFolderName = arcpy.Parameter(
-        displayName="Folder Name",
-        name="Folder_name",
-        datatype="GPString",
-        parameterType="Optional",
-        direction="Input")
-
         # Declare output folder for JSON files
         paramJSONFolder = arcpy.Parameter(
-        displayName="Folder Knowledge Graph Backups",
-        name="Folder_Knowledge_Graph_Backups",
+        displayName="Output folder location",
+        name="Output_folder_location",
         datatype="DEWorkspace",
+        parameterType="Required",
+        direction="Input")
+
+        # Name of output folder containing the collection of files.
+        paramFolderName = arcpy.Parameter(
+        displayName="Output folder name",
+        name="Output_folder_name",
+        datatype="GPString",
         parameterType="Required",
         direction="Input")
 
         # Declare output folder for JSON files
         paramItemDetails = arcpy.Parameter(
-        displayName="Download metadata",
-        name="Download_metadata",
+        displayName="Download item details",
+        name="Download_item details",
         datatype="GPBoolean",
         parameterType="Optional",
         direction="Input")
@@ -226,7 +228,10 @@ class BackupKGAsJSON(object):
             with open(outData, "w") as outfile: 
                 json.dump(prop, outfile)
 
-            inputKG.download_thumbnail(resourcePath)
+            if inputKG.thumbnail != None:
+                inputKG.download_thumbnail(resourcePath)
+            else:
+                pass
         else:
             arcpy.AddMessage('Skipping item details')
             pass
@@ -240,7 +245,9 @@ class BackupKGAsJSON(object):
 class CreateKGfromJSON(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = "Create Knowledge Graph from JSON"
+        textTool2 = "Create Knowledge Graph from JSON"
+        self.label = textTool2
+        self.alias =textTool2.replace(" ","")
         self.description = "This tool will create a Knowledge Graph from a folder of JSON files. This creates the entity types, relationship types, and loads the entities."
         self.canRunInBackground = False
 
@@ -250,24 +257,24 @@ class CreateKGfromJSON(object):
 
         # Declare input folder for JSON files
         paramJSONFolder = arcpy.Parameter(
-        displayName="Folder of JSON Files",
-        name="Folder_of_JSON_Files",
+        displayName="Input backup folder",
+        name="Input_backup_folder",
         datatype="DEWorkspace",
         parameterType="Required",
         direction="Input")
         
         # Output KG name
         paramOutKG = arcpy.Parameter(
-        displayName="New Knowledge Graph Name",
-        name="New_Knowledge_Graph_Name",
+        displayName="New knowledge graph name",
+        name="New_knowledge_graph_name",
         datatype="GPString",
         parameterType="Required",
         direction="Output")
 
         # Declare output folder for JSON files
         paramItemDetails = arcpy.Parameter(
-        displayName="Upload metadata",
-        name="Upload_metadata",
+        displayName="Upload item details",
+        name="Upload_item details",
         datatype="GPBoolean",
         parameterType="Optional",
         direction="Input")
@@ -288,11 +295,33 @@ class CreateKGfromJSON(object):
                 parameters[1].value = arcpy.da.Describe(parameters[0].value)['name']
         else:
             pass
+
+        if parameters[2].value == True:
+            files = arcpy.ListFiles
         return
 
     def updateMessages(self, parameters):
         """Modify the messages created by internal validation for each tool
         parameter.  This method is called after internal validation."""
+        gis = gis = GIS("Home",verify_cert=False)
+        if parameters[0].altered:
+            inFolder = parameters[0].value
+            with arcpy.EnvManager(workspace=inFolder):
+                jsonList = arcpy.ListFiles('*.json')
+                if len(jsonList) == 0:
+                    parameters[0].setErrorMessage("There are no files in this folder. Choose another folder.")
+                else:
+                    pass
+        else:
+            pass
+        if parameters[1].altered:
+            outName = parameters[1].value
+            res = gis.content.search(f"title:{outName}")
+            for item in res:
+                if item.name == outName:
+                    parameters[1].setErrorMessage(f'The name "{outName}" is already in use')
+                else:
+                    pass
         return
 
     def execute(self, parameters, messages):
@@ -527,9 +556,14 @@ class CreateKGfromJSON(object):
                 jItemDetails = json.load(infile)
 
             with arcpy.EnvManager(workspace=resourcePath):
-                thumbnail = os.path.join(resourcePath, arcpy.ListRasters()[0])
-
-            targetKG.update(item_properties = jItemDetails, thumbnail = thumbnail)
+                rasterList = arcpy.ListRasters()
+                if len(rasterList) == 0:
+                    targetKG.update(item_properties = jItemDetails)
+                    pass
+                else:
+                    arcpy.AddMessage(rasterList)
+                    thumbnail = os.path.join(resourcePath, rasterList[0])
+                    targetKG.update(item_properties = jItemDetails, thumbnail = thumbnail)
         else:
             arcpy.AddMessage('Item detail ignored.')
 
