@@ -1,0 +1,96 @@
+000
+FXUS65 KBOU 051044
+AFDBOU
+
+Area Forecast Discussion
+National Weather Service Denver/Boulder CO
+344 AM MST Tue Dec 5 2023
+
+.KEY MESSAGES...
+
+-  Mild and dry through Thursday.
+
+- The next system arrives Friday bringing light to moderate snow
+for parts of the mountains and valleys. By Friday evening, light
+snow could spread into parts of the I-25 corridor and eastern
+plains.
+
+- Cooler temperatures persist Friday through early next week.
+
+&&
+
+.SHORT TERM...(Today and tonight)
+Issued at 343 AM MST Tue Dec 5 2023
+
+We`ll have a quiet day today as a ridge of high pressure builds
+east over Colorado. Flow aloft will be decreasing, but 30-40 knot
+winds in the 600-50 mb layer will still be enough to feed some
+wind down the east slopes of the Front Range. Other areas will not
+have much wind. The remaining clouds trapped against the ridges
+should continue to dissipate and will likely be gone by early
+afternoon. We`ll still have some thin cirrus and a few fragments
+of wave clouds over the Front Range, but it will be a pretty sunny
+day. Forecast temperatures are about the same as yesterday on the
+plains, and 5-10 degrees warmer in the mountains, and those look
+good.
+
+.LONG TERM...(Wednesday through Monday)
+Issued at 343 AM MST Tue Dec 5 2023
+
+Subsidence continues across the region. A strong upper level ridge
+remains in place through Thursday evening. Wednesday will likely be
+the warmest day this week as 700mb temperatures approach 6-8C.
+Surface temperatures range from low to mid 60s for the plains and
+mid 30s to mid 40s for the mountains/valleys. Areas across the
+foothills and plains trend at least 8-15 degrees above normal.
+Although these temperatures will likely not break records, a few
+eastern cities in the plains will be close such as Limon (Record 68
+in 1981). As mostly clear skies continue into Thursday, our Sangster
+pressure gradient model indicates increasing probabilities of
+wind gusts exceeding 60kts starting Thursday morning through late
+evening. This also evident throughout both cross sections
+displaying strong vertical velocities favoring a uniform westerly
+flow and tight pressure gradients. Thus there is agreement with
+the previous shift where wind gusts up to 65-70 mph could reach
+near high wind criteria for the mountain tops and adjacent
+foothills. Additionally, an slight increase in mid-level moisture
+will likely lead to a few photogenic mountain wave clouds.
+
+Starting Thursday night, the next trough enters Utah and pushes into
+Colorado Friday. There is still a bit of disagreement in QPF amounts
+but overall, weak upslope and favorable forcing should lead to
+light to moderate snow for the mountains, valleys, and foothills.
+Depending on the speed of the trough and if it deepens (GFS
+solution), then light snow could continue to spread to the plains
+through Saturday morning. Either way, this forecast package
+includes increasing chances of snow across Park County and the
+Palmer Divide given the sinking movement of this system. Amounts
+are light but given the potential for light snow during rush hour
+on a Friday evening, prepare for slick roads and lower
+visibilities especially across mountain passes. As the bulk of
+moisture exits Saturday afternoon, another shortwave arrives
+Sunday morning which will likely lead to another round of light
+snow for the mountains. Ensembles favor cooler temperatures
+through early next week.
+
+&&
+
+.AVIATION...(For the 12Z TAFS through 12Z Wednesday morning)
+Issued at 343 AM MST Tue Dec 5 2023
+
+VFR through tonight. Southwest winds will become light east or
+northeast around 18z. There may be a couple hours of
+light/variable winds in between. S/W drainage winds should
+resume by 02z.
+
+&&
+
+.BOU WATCHES/WARNINGS/ADVISORIES...
+None.
+&&
+
+$$
+
+SHORT TERM...Gimmestad
+LONG TERM...AD
+AVIATION...Gimmestad

@@ -1,0 +1,2 @@
+MATCH (d:Distributor)-[r:SellsTo]->(p:ProcessingPlant)
+RETURN p

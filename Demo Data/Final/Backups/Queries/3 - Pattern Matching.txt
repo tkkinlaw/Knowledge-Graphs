@@ -1,0 +1,3 @@
+MATCH (d:Distributor{Material:"Metals"})-[:SellsTo]->(p:ProcessingPlant)
+WITH p, COUNT(d) as distCount
+RETURN p, distCount, matDis

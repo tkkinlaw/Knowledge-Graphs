@@ -1,0 +1,2 @@
+MATCH (d:Distributor{Material:"Metals"})-[r:SellsTo]->(p:ProcessingPlant)
+RETURN p
