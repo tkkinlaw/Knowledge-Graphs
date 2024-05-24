@@ -1,5 +1,5 @@
 ### ArcGIS Knowledge
-This GitHub is for: 
+This GitHub repo is for: 
 - Demo data creation scripts
 - Demo data back up management
 - Scripts exploring the openCypher query language
