@@ -56,7 +56,7 @@ WITH a, g, sortedVisits, i,
      duration.between(datetime(sortedVisits[i+1]['Date_time']),
           datetime(sortedVisits[i]['Date_time'])) AS nextDay
 WHERE (prevDay.days = 0 OR nextDay.days = 0)
-  AND (prevDay.hours <> 0 AND nextDay.hours <> 0)
+  AND (prevDay.hours <> 0 AND nextDay.hours <> 0) //<- Why is this needed?
 WITH a, g, collect(sortedVisits[i]) AS results
 WHERE size(results) >= 3
 RETURN a, g, results
