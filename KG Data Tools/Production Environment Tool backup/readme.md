@@ -1,2 +1,1 @@
-This tool is not encrypted. 
-The password to the encrypted python toolbox is "10June2019!"
+This python toolbox is derives from [this help documentation](https://developers.arcgis.com/python/latest/samples/create-and-load-knowledge-graph-backups/)
