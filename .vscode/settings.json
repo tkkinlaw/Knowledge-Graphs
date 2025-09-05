@@ -1,9 +1,13 @@
 {
     "python.defaultInterpreterPath": "C:\\Users\\tim10393\\AppData\\Local\\Programs\\ArcGIS\\Pro\\bin\\Python\\envs\\arcgispro-py3",
     "python.autoComplete.extraPaths": [
-
     ],
     "files.associations": {
-    "*.pyt": "python"
+        "*.pyt": "python"
+    },
+    "python.analysis.aiCodeActions": {
+        "implementAbstractClasses": true,
+        "generateSymbol": true,
+        "convertFormatString": true
     }
 }
